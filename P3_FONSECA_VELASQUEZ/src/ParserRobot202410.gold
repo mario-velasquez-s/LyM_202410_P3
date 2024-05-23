@@ -5,7 +5,7 @@ toSet(C) :=  {x|  x in C}
 ///====   mini Parser===
 
 function createParser(A):IPushdownAutomaton begin
-	Q:=(-2‥15)
+	Q:=(-5‥15)
 	Σ:=toSet(A)  ∪ {' ', '\n'}
 	
 	Γ:={'1'}
@@ -21,13 +21,14 @@ SkipChars := {' ', '\n'}   // this will only  be used when testing only the pars
 		
 	 M.delta(0,1,"(m").push("1")  // 1 for  (move n) n and (skip n)
 	 M.delta(1,-1,'#').ignore()   // 1 !!
+	 M.delta(1,-1,'i').ignore()
 	 
 	 M.delta(0,2,"(t").push("1")  // 2 for (turn D) D in {L,R,A}
 	 M.delta(2,-1,"r").ignore()
 	 M.delta(2,-1,"A").ignore()
 	 
 	 M.delta(0,3,"(t").push("1")  // 3 for (face O) O in {N,S,W,E}
-	 M.delta(3,-1,"d").ignore()
+	 M.delta(3,-1,"d").ignore()	// 3!!
 	 
 	 M.delta(0,4,"(p").push("1")  // 4 for (put X n) X in {balloons, chips}
 	 M.delta(4,1,"o").ignore()   // 1
@@ -43,7 +44,7 @@ SkipChars := {' ', '\n'}   // this will only  be used when testing only the pars
      M.delta(7,-2,"z").ignore()
      M.delta(-2,-2,"r").ignore()
      M.delta(-2,-2,"z").ignore()
-     M.delta(-2, 0,")").ignore()
+     M.delta(-2, 0,")").pop("1")
      
      M.delta(0,8,"(a").push("1")  // 8 for  (move-face n O) O in {N,S,W,E}
      M.delta(8,9,"I").ignore()    // 9
@@ -62,6 +63,25 @@ SkipChars := {' ', '\n'}   // this will only  be used when testing only the pars
 	 M.delta(12, 13,"(i").ignore()
 	 M.delta(13, 13,"i").ignore()
 	 M.delta(13, 0,"i)").ignore()
+
+	 M.delta(0,14,"(I").push("1")  // 14 (if condition B1 B2) !!!
+	 M.delta(0,14,"(L").push("1")	 // 14 (loop condition B)  !!!
+	 M.delta(0,15,"(L").push("1")	 // 15 (repeat n B)
+	 M.delta(15,0,"#").ignore()
+	 M.delta(15,0,"i").ignore()
+	 
+	 M.delta(14, 3,"(F").push("1") 
+	 M.delta(14, -1,"(O").push("1") 
+	 M.delta(14, 4,"(P").push("1") 
+	 M.delta(14, 3,"(W").push("1") 
+	 M.delta(14, 1,"(Z").push("1") 
+	 M.delta(14, 14,"(n").push("1")
+	 
+	 
+	 M.delta(0,-3,"(i").push("1") // -3 (funName p1 p2)
+	 M.delta(-3,-3,"#").ignore()
+	 M.delta(-3,-3,"i").ignore()
+	 M.delta(-3,0,")").pop("1")
 	 
      
      // if
@@ -70,8 +90,10 @@ SkipChars := {' ', '\n'}   // this will only  be used when testing only the pars
     
     
     M.delta(-1, 0,")").pop("1")
-    M.delta(-1, 0,"D").pop("1", "1")
-    M.delta(-1, 0,"T").pop("1", "1", "1")
+    M.delta(-1, -4,"D").pop("1")
+    M.delta(-4, 0,λ).pop("1")
+    M.delta(-1, -5,"T").pop("1")
+    M.delta(-5, -4,λ).pop("1")
     // "))" ")))""
 
  for each q in Q do
