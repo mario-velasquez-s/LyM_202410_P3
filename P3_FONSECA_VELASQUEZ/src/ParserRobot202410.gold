@@ -1,0 +1,85 @@
+using gold.**
+
+toSet(C) :=  {x|  x in C}
+
+///====   mini Parser===
+
+function createParser(A):IPushdownAutomaton begin
+	Q:=(-2‥15)
+	Σ:=toSet(A)  ∪ {' ', '\n'}
+	
+	Γ:={'1'}
+	q₀:=0
+	F:= {0}
+	M:=GPushdownAutomaton(Q,Σ,Γ,q₀,F)
+SkipChars := {' ', '\n'}   // this will only  be used when testing only the parser as the lexer removes  SkipChars
+	//transition for open and close  parenthesis astoplevel commands.You may use others for bllocks
+	
+	
+		// defvar
+	
+		
+	 M.delta(0,1,"(m").push("1")  // 1 for  (move n) n and (skip n)
+	 M.delta(1,-1,'#').ignore()   // 1 !!
+	 
+	 M.delta(0,2,"(t").push("1")  // 2 for (turn D) D in {L,R,A}
+	 M.delta(2,-1,"r").ignore()
+	 M.delta(2,-1,"A").ignore()
+	 
+	 M.delta(0,3,"(t").push("1")  // 3 for (face O) O in {N,S,W,E}
+	 M.delta(3,-1,"d").ignore()
+	 
+	 M.delta(0,4,"(p").push("1")  // 4 for (put X n) X in {balloons, chips}
+	 M.delta(4,1,"o").ignore()   // 1
+    
+     M.delta(0,5,"(h").push("1")  // 5 for  (move-dir   n  :right)
+     M.delta(5,6,"I").ignore()    // 6
+     M.delta(5,6,"#").ignore()
+     M.delta(6,-1,"r").ignore()
+     M.delta(6,-1,"z").ignore()
+     
+     M.delta(0,7,"(u").push("1")  // 7 for  (move-dirs Ds) Ds > 0, Ds <- (R,L,F,B)
+     M.delta(7,-2,"r").ignore()
+     M.delta(7,-2,"z").ignore()
+     M.delta(-2,-2,"r").ignore()
+     M.delta(-2,-2,"z").ignore()
+     M.delta(-2, 0,")").ignore()
+     
+     M.delta(0,8,"(a").push("1")  // 8 for  (move-face n O) O in {N,S,W,E}
+     M.delta(8,9,"I").ignore()    // 9
+     M.delta(8,9,"#").ignore()
+     M.delta(9,-1,"r").ignore()
+     M.delta(9,-1,"z").ignore()
+     
+     M.delta(0,-1,"(l").push("1")  // -1 (null)
+	 
+	 M.delta(0,10,"(d").push("1")  // 10 (defvar name n) 
+	 M.delta(0,10,"(=").push("1")
+	 M.delta(10,1,"i").ignore() 	// 1
+	 
+	 M.delta(0,11,"(e").push("1")  // 11 (defun name (params) Is))
+	 M.delta(11, 12,"i").ignore()  
+	 M.delta(12, 13,"(i").ignore()
+	 M.delta(13, 13,"i").ignore()
+	 M.delta(13, 0,"i)").ignore()
+	 
+     
+     // if
+     // loop
+     // repeate
+    
+    
+    M.delta(-1, 0,")").pop("1")
+    M.delta(-1, 0,"D").pop("1", "1")
+    M.delta(-1, 0,"T").pop("1", "1", "1")
+    // "))" ")))""
+
+ for each q in Q do
+ 	for each s in SkipChars do
+ 	   M.delta(q,q,λ+s).ignore()
+ end
+ end
+
+
+return M
+end
